@@ -5,8 +5,11 @@ import com.appsdeveloperblog.ws.stocktracker.dto.DailyStockResponse;
 import com.appsdeveloperblog.ws.stocktracker.dto.StockHistoryResponse;
 import com.appsdeveloperblog.ws.stocktracker.dto.StockOverviewResponse;
 import com.appsdeveloperblog.ws.stocktracker.dto.StockResponse;
+import com.appsdeveloperblog.ws.stocktracker.entity.FavoriteStock;
+import com.appsdeveloperblog.ws.stocktracker.repository.FavoriteStockRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -18,6 +21,7 @@ import java.util.List;
 public class StockService {
 
     private final StockClient stockClient;
+    private final FavoriteStockRepository favoriteStockRepository;
 
     public Mono<StockResponse> getStockForSymbol(final String stockSymbol) {
         return stockClient.getStockQuote(stockSymbol)
@@ -51,4 +55,18 @@ public class StockService {
                             .build();
                 });
     }
+
+    @Transactional
+    public FavoriteStock addFavorite(final String symbol){
+        if(favoriteStockRepository.existsBySymbol(symbol)){
+            throw new RuntimeException("Favorite already exists: " +symbol);
+        }
+
+        FavoriteStock favorite = FavoriteStock.builder()
+                .symbol(symbol)
+                .build();
+
+        return favoriteStockRepository.save(favorite);
+    }
+
 }

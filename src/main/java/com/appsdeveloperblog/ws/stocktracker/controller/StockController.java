@@ -1,10 +1,13 @@
 package com.appsdeveloperblog.ws.stocktracker.controller;
 
 import com.appsdeveloperblog.ws.stocktracker.dto.DailyStockResponse;
+import com.appsdeveloperblog.ws.stocktracker.dto.FavoriteStockRequest;
 import com.appsdeveloperblog.ws.stocktracker.dto.StockOverviewResponse;
 import com.appsdeveloperblog.ws.stocktracker.dto.StockResponse;
+import com.appsdeveloperblog.ws.stocktracker.entity.FavoriteStock;
 import com.appsdeveloperblog.ws.stocktracker.service.StockService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -28,10 +31,13 @@ public class StockController {
     }
 
     @GetMapping("/{symbol}/history")
-    public Flux<DailyStockResponse> getStockHistory(
-            @PathVariable String symbol,
-            @RequestParam(defaultValue = "30") int days
-    ){
+    public Flux<DailyStockResponse> getStockHistory(@PathVariable String symbol, @RequestParam(defaultValue = "30") int days){
         return stockService.getHistory(symbol.toUpperCase(), days);
+    }
+
+    @PostMapping("/favorites")
+    public ResponseEntity<FavoriteStock> saveFavoriteStock(@RequestBody FavoriteStockRequest request) {
+        final FavoriteStock saved = stockService.addFavorite(request.getSymbol());
+        return ResponseEntity.ok(saved);
     }
 }
