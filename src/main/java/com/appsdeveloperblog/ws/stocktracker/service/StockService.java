@@ -1,6 +1,7 @@
 package com.appsdeveloperblog.ws.stocktracker.service;
 
 import com.appsdeveloperblog.ws.stocktracker.client.StockClient;
+import com.appsdeveloperblog.ws.stocktracker.dto.StockOverviewResponse;
 import com.appsdeveloperblog.ws.stocktracker.dto.StockResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -19,5 +20,9 @@ public class StockService {
                         .price(Double.parseDouble(response.globalQuote().price()))
                         .lastUpdated(response.globalQuote().lastTradingDay())
                         .build());
+    }
+
+    public Mono<StockOverviewResponse> getStockOverviewForSymbol(final String symbol){
+        return stockClient.getStockOverview(symbol);
     }
 }
