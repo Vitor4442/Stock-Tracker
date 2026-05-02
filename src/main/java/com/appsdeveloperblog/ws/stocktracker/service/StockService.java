@@ -6,6 +6,7 @@ import com.appsdeveloperblog.ws.stocktracker.dto.StockHistoryResponse;
 import com.appsdeveloperblog.ws.stocktracker.dto.StockOverviewResponse;
 import com.appsdeveloperblog.ws.stocktracker.dto.StockResponse;
 import com.appsdeveloperblog.ws.stocktracker.entity.FavoriteStock;
+import com.appsdeveloperblog.ws.stocktracker.exception.FavoriteAlreadyExistsException;
 import com.appsdeveloperblog.ws.stocktracker.repository.FavoriteStockRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -59,7 +60,7 @@ public class StockService {
     @Transactional
     public FavoriteStock addFavorite(final String symbol){
         if(favoriteStockRepository.existsBySymbol(symbol)){
-            throw new RuntimeException("Favorite already exists: " +symbol);
+            throw new FavoriteAlreadyExistsException(symbol);
         }
 
         FavoriteStock favorite = FavoriteStock.builder()
