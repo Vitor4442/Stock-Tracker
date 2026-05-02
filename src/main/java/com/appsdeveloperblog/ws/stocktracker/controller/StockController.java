@@ -1,14 +1,14 @@
 package com.appsdeveloperblog.ws.stocktracker.controller;
 
+import com.appsdeveloperblog.ws.stocktracker.dto.DailyStockResponse;
 import com.appsdeveloperblog.ws.stocktracker.dto.StockOverviewResponse;
 import com.appsdeveloperblog.ws.stocktracker.dto.StockResponse;
 import com.appsdeveloperblog.ws.stocktracker.service.StockService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
 
 @RestController
 @RequestMapping("/api/v1/stocks")
@@ -25,5 +25,13 @@ public class StockController {
     @GetMapping("/{stockSymbol}/overview")
     public Mono<StockOverviewResponse> getStockOverview(@PathVariable String stockSymbol){
         return stockService.getStockOverviewForSymbol(stockSymbol.toUpperCase());
+    }
+
+    @GetMapping("/{symbol}/history")
+    public Flux<DailyStockResponse> getStockHistory(
+            @PathVariable String symbol,
+            @RequestParam(defaultValue = "30") int days
+    ){
+        return stockService.getHistory(symbol.toUpperCase(), days);
     }
 }

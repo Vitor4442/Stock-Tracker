@@ -1,6 +1,7 @@
 package com.appsdeveloperblog.ws.stocktracker.client;
 
 import com.appsdeveloperblog.ws.stocktracker.dto.AlphaVantageResponse;
+import com.appsdeveloperblog.ws.stocktracker.dto.StockHistoryResponse;
 import com.appsdeveloperblog.ws.stocktracker.dto.StockOverviewResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,6 +17,17 @@ public class StockClient {
 
     @Value("${alpha.vantage.api.key}")
     private String apiKey;
+
+    public Mono<StockHistoryResponse> getStockHistory(String symbol) {
+        return webClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .queryParam("function", "TIME_SERIES_DAILY")
+                        .queryParam("symbol", symbol)
+                        .queryParam("apikey", apiKey)
+                        .build())
+                .retrieve()
+                .bodyToMono(StockHistoryResponse.class) ;
+    }
 
     public Mono<AlphaVantageResponse> getStockQuote(String symbol){
         return webClient.get()

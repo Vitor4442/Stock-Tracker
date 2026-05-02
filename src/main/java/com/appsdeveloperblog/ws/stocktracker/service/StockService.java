@@ -1,11 +1,17 @@
 package com.appsdeveloperblog.ws.stocktracker.service;
 
 import com.appsdeveloperblog.ws.stocktracker.client.StockClient;
+import com.appsdeveloperblog.ws.stocktracker.dto.DailyStockResponse;
+import com.appsdeveloperblog.ws.stocktracker.dto.StockHistoryResponse;
 import com.appsdeveloperblog.ws.stocktracker.dto.StockOverviewResponse;
 import com.appsdeveloperblog.ws.stocktracker.dto.StockResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.util.List;
+
 
 @Service
 @RequiredArgsConstructor
@@ -24,5 +30,25 @@ public class StockService {
 
     public Mono<StockOverviewResponse> getStockOverviewForSymbol(final String symbol){
         return stockClient.getStockOverview(symbol);
+    }
+
+    public Flux<DailyStockResponse> getHistory(String symbol, int days) {
+        return stockClient.getStockHistory(symbol)
+                .flatMapMany(response -> Flux.fromIterable(response.timeSeries().entrySet()))
+                .sort((entry1, entry2) -> entry2.getKey().compareTo(entry1.getKey()))
+                .take(days)
+                .map(entry -> {
+                    String date = entry.getKey();
+                    StockHistoryResponse.DailyPrice price = entry.getValue();
+
+                    return DailyStockResponse.builder()
+                            .date(date)
+                            .open(Double.parseDouble(price.open()))
+                            .close(Double.parseDouble(price.close()))
+                            .high(Double.parseDouble(price.high()))
+                            .low(Double.parseDouble(price.low()))
+                            .volume(Long.parseLong(price.volume()))
+                            .build();
+                });
     }
 }
