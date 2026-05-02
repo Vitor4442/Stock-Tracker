@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
 
 @RestController
 @RequestMapping("/api/v1/stocks")
@@ -39,5 +41,10 @@ public class StockController {
     public ResponseEntity<FavoriteStock> saveFavoriteStock(@RequestBody FavoriteStockRequest request) {
         final FavoriteStock saved = stockService.addFavorite(request.getSymbol());
         return ResponseEntity.ok(saved);
+    }
+
+    @GetMapping("/favorites")
+    public Flux<StockResponse> getFavoritesWithPrices(){
+        return stockService.getFavoriteWithLivePrices();
     }
 }

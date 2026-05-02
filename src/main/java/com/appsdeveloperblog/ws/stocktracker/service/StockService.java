@@ -9,12 +9,14 @@ import com.appsdeveloperblog.ws.stocktracker.entity.FavoriteStock;
 import com.appsdeveloperblog.ws.stocktracker.exception.FavoriteAlreadyExistsException;
 import com.appsdeveloperblog.ws.stocktracker.repository.FavoriteStockRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -24,6 +26,7 @@ public class StockService {
     private final StockClient stockClient;
     private final FavoriteStockRepository favoriteStockRepository;
 
+    @Cacheable(value = "stocks", key = "#stocksSymbol")
     public Mono<StockResponse> getStockForSymbol(final String stockSymbol) {
         return stockClient.getStockQuote(stockSymbol)
                 .map(response -> StockResponse.builder()
@@ -68,6 +71,13 @@ public class StockService {
                 .build();
 
         return favoriteStockRepository.save(favorite);
+    }
+
+    public Flux<StockResponse> getFavoriteWithLivePrices() {
+        List<FavoriteStock> favoriteStocks = favoriteStockRepository.findAll();
+
+        return Flux.fromIterable(favoriteStocks)
+                .flatMap(fav -> getStockForSymbol(fav.getSymbol()));
     }
 
 }
